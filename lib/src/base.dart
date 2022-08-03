@@ -116,10 +116,12 @@ class JsonPreference {
   /// - [debugMsg] : easier to trace caller
   /// - [dateTime] : manually set the save time. Default is `null` and current time is used.
   /// - [noSaveTime] : set to `true` in case you don't want to update the save time. Default is `false`.
+  /// - [saved] : a callback function to be executed when save is finished
   /// - Do not override.
   Future<void> save({
-    String debugMsg = '',
     DateTime? dateTime,
+    Function? saved,
+    String debugMsg = '',
     bool noSaveTime = false,
   }) async {
     // Set pending flag
@@ -127,10 +129,11 @@ class JsonPreference {
       String debugPrefix = '$debugMsg -> $runtimeType.save()';
       // Set pending
       lazy.log(debugPrefix, forced: debugLogSave);
-      await _saveWait(
+      _saveWait(
         debugMsg: debugPrefix,
         dateTime: dateTime,
         noSaveTime: noSaveTime,
+        saved: saved,
       );
     }
   }
@@ -148,6 +151,7 @@ class JsonPreference {
     String debugMsg = '',
     DateTime? dateTime,
     int? waitSeconds,
+    Function? saved,
     bool noSaveTime = false,
   }) async {
     String debugPrefix = '$debugMsg -> $runtimeType._saveWait()';
@@ -167,13 +171,15 @@ class JsonPreference {
           debugMsg: '$debugPrefix:waitAgain',
           waitSeconds: saveWaitAgainSeconds,
           noSaveTime: noSaveTime,
+          saved: saved,
         );
       } else {
         // no more waiting, save
-        await _saveGo(
+        _saveGo(
           debugMsg: debugPrefix,
           dateTime: dateTime,
           noSaveTime: noSaveTime,
+          saved: saved,
         );
       }
     } else {
@@ -184,8 +190,9 @@ class JsonPreference {
   }
 
   Future _saveGo({
-    String debugMsg = '',
     DateTime? dateTime,
+    Function? saved,
+    String debugMsg = '',
     bool noSaveTime = false,
   }) async {
     String debugPrefix = '$debugMsg -> $runtimeType._saveGo()';
@@ -194,6 +201,7 @@ class JsonPreference {
     if (!noSaveTime) await _saveTime(dateTime: dateTime);
     String json = lazy.jsonPretty(this);
     await pref.setString(key, json);
+    if (saved != null) saved();
     lazy.log('$debugPrefix:${json.length}(byte):noSaveTime:$noSaveTime', forced: debugLogSave);
   }
 

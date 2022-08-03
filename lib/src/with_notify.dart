@@ -40,19 +40,27 @@ class JsonPreferenceNotify extends JsonPreference with ChangeNotifier {
   /// - [dateTime] : manually set the save time. Default is `null` and current time is used.
   /// - [noSaveTime] : set to `true` in case you don't want to update the save time. Default is `false`.
   /// - [saveNotify] : If `true`, trigger [saveNotifier] at end of call. Default `true`.
+  /// - [saved] : a callback function to be executed when save is finished. DO NOT ADD [saveNotifier] here, it is already done for you.
   /// - Do not override.
   @override
-  Future save({
-    String debugMsg = '',
+  Future<void> save({
     DateTime? dateTime,
-    bool saveNotify = true,
+    Function? saved,
+    String debugMsg = '',
     bool noSaveTime = false,
-  }) async {
-    await super.save(
-      debugMsg: debugMsg,
-      dateTime: dateTime,
-      noSaveTime: noSaveTime,
-    );
+    bool saveNotify = true,
+  }) async =>
+      super.save(
+        debugMsg: debugMsg,
+        dateTime: dateTime,
+        noSaveTime: noSaveTime,
+        saved: () {
+          if (saved != null) saved();
+          _saved(saveNotify);
+        },
+      );
+
+  void _saved(bool saveNotify) {
     if (saveNotify) saveNotifier.value = !saveNotifier.value;
   }
 }
