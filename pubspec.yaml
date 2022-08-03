@@ -1,5 +1,5 @@
 name: json_preferences
-description: Combine json object with [SharedPreferences]
+description: Combine json object with [SharedPreferences]. And an extended version with notifier.
 version: 0.1.0
 homepage: https://github.com/J-Siu/json_preferences
 
